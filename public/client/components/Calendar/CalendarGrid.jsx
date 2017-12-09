@@ -4,9 +4,11 @@ import IconButton from 'material-ui/IconButton';
 import Subheader from 'material-ui/Subheader';
 import StarBorder from 'material-ui/svg-icons/toggle/star-border';
 import { blue50,blue200 } from 'material-ui/styles/colors';
-import NavigationArrowForward from 'material-ui/svg-icons/navigation/arrow-forward';
-import NavigationArrowBack from 'material-ui/svg-icons/navigation/arrow-back';
+import SvgIcons from 'material-ui/svg-icons';
+import NavigationArrowForward from 'material-ui/svg-icons/hardware/keyboard-arrow-right';
+import NavigationArrowBack from 'material-ui/svg-icons/hardware/keyboard-arrow-left';
 import moment from 'moment';
+require('./CalendarGrid.scss');
 
 const styles = {
     root: {
@@ -45,7 +47,7 @@ const styles = {
     dayNames: {
         height: 50,
         marginBottom: 20,
-    }
+    },
 };
 
 const startDay = moment().clone().startOf('month').startOf('week').add(-1, 'day');
@@ -79,15 +81,9 @@ class CalendarGrid extends React.Component {
         
         this.forwardMonthClick = this.forwardMonthClick.bind(this);
         this.backMonthClick = this.backMonthClick.bind(this);
-       //this.constructCalendarObject = this.constructCalendarObject.bind(this);
     }
     
     forwardMonthClick() {
-        //const currentSelectedDate = this.state.startDay.clone();
-        // const newStartDay = this.state.startDay.clone().add(1, 'M');
-        // const newEndDay = this.state.endDay.clone().add(1, 'M');
-        //console.log();
-
         this.setState((prevState, props) => {
 
             const calObject = this.constructCalendarObject(prevState, 1);
@@ -156,14 +152,16 @@ class CalendarGrid extends React.Component {
     render(){
         return <div style={styles.root}>
         <GridList style={styles.gridListDayName} cellHeight={180} cols={7}>
-        <Subheader>
-            {this.state.monthOfSelected.clone().format('MMMM YYYY')}
-        <IconButton tooltip="Back">
-        <NavigationArrowBack onClick={this.backMonthClick} />
-        </IconButton>
-        <IconButton tooltip="Forward">
-        <NavigationArrowForward onClick={this.forwardMonthClick}/>
-        </IconButton>
+        <Subheader className="grid-list__heading__container">
+            <h3 className="grid-list__heading">{this.state.monthOfSelected.clone().format('MMMM YYYY')}</h3>
+        <div className="calendar-nav">
+            <IconButton tooltip="Back">
+                <NavigationArrowBack onClick={this.backMonthClick} />
+            </IconButton>
+            <IconButton tooltip="Forward">
+                <NavigationArrowForward onClick={this.forwardMonthClick}/>
+            </IconButton>
+        </div>
         </Subheader>
         {
             this.props.dayNames.map((day, index) => 
