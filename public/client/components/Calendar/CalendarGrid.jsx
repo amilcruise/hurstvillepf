@@ -48,9 +48,11 @@ const styles = {
     }
 };
 
+const startDay = moment().clone().startOf('month').startOf('week').add(-1, 'day');
+const endDay = moment().clone().endOf('month').endOf('week');
+
 const getTileStyle = (day, index) => {
-    const isToday = day.date == moment().date() ? 'today' : 'notToday';
-    console.log(day.date == moment().date());
+    const isToday = day.exactDate.format('YYYY-MM-DD') == moment().format('YYYY-MM-DD') ? 'today' : 'notToday';
     
     if (!day.isThisMonth) {
         return styles.tiles.notThisMonth;
@@ -67,34 +69,97 @@ class CalendarGrid extends React.Component {
     
     constructor(props) {
         super(props);
+
+        this.state = {
+            startDay: startDay,
+            endDay: endDay,
+            monthOfSelected: moment(),
+            calendar: [],
+        }
         
         this.forwardMonthClick = this.forwardMonthClick.bind(this);
         this.backMonthClick = this.backMonthClick.bind(this);
+       //this.constructCalendarObject = this.constructCalendarObject.bind(this);
     }
     
-    forwardMonthClick(month, nextMonth) {
-        
+    forwardMonthClick() {
+        //const currentSelectedDate = this.state.startDay.clone();
+        // const newStartDay = this.state.startDay.clone().add(1, 'M');
+        // const newEndDay = this.state.endDay.clone().add(1, 'M');
+        //console.log();
+
+        this.setState((prevState, props) => {
+
+            const calObject = this.constructCalendarObject(prevState, 1);
+
+            return {
+                startDay: calObject.newStartDay,
+                endDay: calObject.newEndDay,
+                monthOfSelected: calObject.newMonthOfSelected,
+                calendar: calObject.calendar,
+            }
+        });
     }
     
-    backMonthClick(month, prevMonth) {
-        
+    backMonthClick() {
+        this.setState((prevState, props) => {
+
+            const calObject = this.constructCalendarObject(prevState, -1);
+
+            return {
+                startDay: calObject.newStartDay,
+                endDay: calObject.newEndDay,
+                monthOfSelected: calObject.newMonthOfSelected,
+                calendar: calObject.calendar,
+            }
+        });
     }
 
-    // componentDidMount(){
-    //     this.constructCalendarObject();
-    // }
-    
-    // componentDidUpdate(){
-    //     this.constructCalendarObject();
-    // }
+    constructCalendarObject(currentState, action){
+
+        const newStartDay = currentState.monthOfSelected.clone().add(action,'M').startOf('month').startOf('week').add(-1, 'day');
+        const newEndDay = currentState.monthOfSelected.clone().add(action,'M').endOf('month').endOf('week');
+        const newMonthOfSelected = currentState.monthOfSelected.add(action,'M');
+
+        const thisMonth = action ? newMonthOfSelected.month() + 1 : moment().month() + 1;
+        const index = action ? newStartDay : currentState.startDay.clone();
+        let calendar = [];
+
+        
+        while (index.isBefore(newEndDay, 'day')) {
+            const dateClone = index.clone();
+            
+            calendar.push(
+                {
+                    date: index.add(1, 'day').date() + '',
+                    exactDate: dateClone,
+                    isThisMonth: thisMonth == dateClone.add(1, 'day').month() + 1,
+                }
+            );
+        }
+
+        return {
+            newStartDay,
+            newEndDay,
+            newMonthOfSelected,
+            calendar,
+        };
+    }
+
+    componentDidMount(){
+        this.setState((prevState, props) => {
+            return {
+                calendar: this.constructCalendarObject(prevState).calendar,
+        }});
+    }
     
     render(){
         return <div style={styles.root}>
         <GridList style={styles.gridListDayName} cellHeight={180} cols={7}>
         <Subheader>
-        December
+            {this.state.monthOfSelected.clone().format('MMMM YYYY')}
         <IconButton tooltip="Back">
-        <NavigationArrowBack onClick={this.forwardMonthClick} />
+        <NavigationArrowBack onClick={this.backMonthClick} />
         </IconButton>
         <IconButton tooltip="Forward">
         <NavigationArrowForward onClick={this.forwardMonthClick}/>
@@ -116,7 +181,7 @@ class CalendarGrid extends React.Component {
         </GridList>
         <GridList style={styles.gridList} cellHeight={120} cols={7}>
         {
-            this.props.calendar.map((day, index) => 
+            this.state.calendar.map((day, index) => 
             (
                 <GridTile
                 key={index}
