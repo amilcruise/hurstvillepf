@@ -23,6 +23,7 @@ class Calendar extends React.Component {
         return (
             <CalendarGrid 
                 dayNames={dayNames}
+                apiToken={this.props.apiToken}
             />
     )}
 }

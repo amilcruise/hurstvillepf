@@ -3,7 +3,7 @@ import {GridList, GridTile} from 'material-ui/GridList';
 import IconButton from 'material-ui/IconButton';
 import Subheader from 'material-ui/Subheader';
 import StarBorder from 'material-ui/svg-icons/toggle/star-border';
-import { blue50,blue200 } from 'material-ui/styles/colors';
+import { blue50, blue200, grey900, lightBlue50, blueGrey50 } from 'material-ui/styles/colors';
 import SvgIcons from 'material-ui/svg-icons';
 import NavigationArrowForward from 'material-ui/svg-icons/hardware/keyboard-arrow-right';
 import NavigationArrowBack from 'material-ui/svg-icons/hardware/keyboard-arrow-left';
@@ -34,10 +34,12 @@ const styles = {
             backgroundColor: blue200,
         },
         notToday: {
-            backgroundColor: {},
+            backgroundColor: lightBlue50,
+            color: grey900,
         },
         notThisMonth: {
-            opacity: 0.2 
+            opacity: 0.5,
+            backgroundColor: blueGrey50,
         }
     },
     gridListDayName: {
@@ -67,20 +69,42 @@ const getTileStyle = (day, index) => {
     }
 }
 
+const titleStyle = (schedule) => {
+
+    if (!schedule) return;
+
+    let style = {};
+
+    if (schedule.items === 0) {
+        style.titleBackground = 'rgba(0, 0, 0, 0)';
+        style.titleStyle = {
+            color: grey900,
+        };
+    }
+
+    return style;
+}
+
 class CalendarGrid extends React.Component {
     
     constructor(props) {
         super(props);
+        
+        this.forwardMonthClick = this.forwardMonthClick.bind(this);
+        this.backMonthClick = this.backMonthClick.bind(this);
+        this.insertSchedule = this.insertSchedule.bind(this);
 
         this.state = {
             startDay: startDay,
             endDay: endDay,
             monthOfSelected: moment(),
-            calendar: [],
+            calendar: this.constructCalendarObject({
+                monthOfSelected: moment(),
+                startDay: startDay,
+                endDay: endDay,
+            }).calendar,
+            schedules: [],
         }
-        
-        this.forwardMonthClick = this.forwardMonthClick.bind(this);
-        this.backMonthClick = this.backMonthClick.bind(this);
     }
     
     forwardMonthClick() {
@@ -135,18 +159,51 @@ class CalendarGrid extends React.Component {
         }
 
         return {
-            newStartDay,
-            newEndDay,
+            startDay,
+            endDay,
             newMonthOfSelected,
             calendar,
-        };
+        }
+    }
+
+    insertSchedule(schedules, calendarDate) {
+
+        let items = 0;
+        let titles = "";
+        let descs = "";
+
+        if (schedules && calendarDate) {
+            for(let i = 0; i < schedules.length; i++) {
+                if (schedules[i].date_from === calendarDate.format('YYYY-MM-DD')) {
+                    items++;
+                    titles = titles + (items > 1 ? ", " : "") + schedules[i].title;
+                    descs = descs + (items > 1 ? ", " : "") + schedules[i].description;
+                }
+            }
+        }
+
+        return {
+            title: titles,
+            description: descs,
+            items: items,
+        }
     }
 
     componentDidMount(){
-        this.setState((prevState, props) => {
-            return {
-                calendar: this.constructCalendarObject(prevState).calendar,
-        }});
+        const self = this;
+        fetch('http://localhost:8000/api/schedule/?api_token=' + self.props.apiToken + 
+            '&start_date=' + self.state.calendar[0].exactDate.format('YYYY-MM-DD') + 
+            '&end_date=' + self.state.calendar[self.state.calendar.length -1].exactDate.format('YYYY-MM-DD'))
+            .then(function(response) {
+            return response.json()
+        }).then(function(data) {
+            //self.setState({ data }, () => console.log(self.state));
+            if (data && data.status === 'success'){
+                self.setState({
+                    schedules: data.schedules,
+                });
+            }
+        });
     }
     
     render(){
@@ -179,16 +236,24 @@ class CalendarGrid extends React.Component {
         </GridList>
         <GridList style={styles.gridList} cellHeight={120} cols={7}>
         {
-            this.state.calendar.map((day, index) => 
-            (
-                <GridTile
-                key={index}
-                title={day.date}
-                className="tiles"
-                style={getTileStyle(day, index)}
-                >
-                </GridTile>
-            )
+            this.state.calendar.map((day, index) => {
+
+                const schedule = this.insertSchedule(this.state.schedules, day.exactDate);
+
+                return (
+                    <GridTile
+                    key={index}
+                    title={day.date}
+                    subtitle={schedule.title}
+                    titleBackground={titleStyle(schedule).titleBackground}
+                    className="tiles"
+                    style={getTileStyle(day, index)}
+                    titleStyle={titleStyle(schedule).titleStyle}
+                    >
+                    </GridTile>
+                )
+            }
+            
         )
     }
     </GridList>

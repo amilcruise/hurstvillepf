@@ -43,7 +43,7 @@ class UsersController extends Controller
     
              User::where('email', $request->input('email'))->update(['api_token' => "$apikey"]);;
     
-             return response()->json(['status' => 'success','api_token' => $apikey]);
+             return response()->json(['status' => 'success','api_token' => substr($apikey, 0, 60)]);
     
          } else {
     

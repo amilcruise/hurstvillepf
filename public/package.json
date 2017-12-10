@@ -28,6 +28,6 @@
     "babel-preset-react": "^6.24.1"
   },
   "scripts": {
-    "start": "webpack-dev-server"
+    "start": "webpack-dev-server --hot --inline"
   }
 }

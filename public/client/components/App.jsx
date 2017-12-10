@@ -3,6 +3,11 @@ import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import DashboardContainer from './Dashboard/DashboardContainer';
 
 export default class App extends React.Component {
+
+  constructor(props) {
+    super(props); 
+  }
+  
   render() {
     return (
       <MuiThemeProvider>

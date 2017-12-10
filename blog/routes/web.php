@@ -17,4 +17,5 @@ $router->get('/', function () use ($router) {
 
 $router->group(['prefix' => 'api/'], function ($router) {
     $router->get('login/','UsersController@authenticate');
+    $router->get('schedule/','ScheduleController@getschedule');
 });
