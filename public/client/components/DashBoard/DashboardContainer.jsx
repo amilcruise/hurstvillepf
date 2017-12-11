@@ -78,7 +78,6 @@ class DashboardContainer extends React.Component {
     }
 
     handleFieldChange(event) {
-        console.log(self);
         if (event.target.id === 'login_email') {
             this.setState({
                 email: event.target.value

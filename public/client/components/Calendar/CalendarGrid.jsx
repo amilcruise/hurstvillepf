@@ -103,6 +103,9 @@ class CalendarGrid extends React.Component {
         this.handleScheduleSubmit = this.handleScheduleSubmit.bind(this);
         this.handleScheduleCancel = this.handleScheduleCancel.bind(this); 
         this.scheduleDialogHandler = this.scheduleDialogHandler.bind(this);
+        this.handleScheduleDialogOnChange = this.handleScheduleDialogOnChange.bind(this);
+        this.handleScheduleDateChange = this.handleScheduleDateChange.bind(this);
+        this.handleScheduleDelete = this.handleScheduleDelete.bind(this);
         
         this.state = {
             startDay: startDay,
@@ -231,37 +234,83 @@ class CalendarGrid extends React.Component {
     
     handleScheduleSubmit() {
         const self = this;
-        fetch('http://localhost:8000/api/login/?email=' + self.state.email + '&password=' + self.state.password )
+        fetch('http://localhost:8000/api/schedule/add/?api_token=' + self.props.apiToken + 
+            '&date_from=' + moment(self.state.scheduleDate).format('YYYY-MM-DD') + 
+            '&title=' + self.state.scheduleTitle +
+            '&description=' + self.state.scheduleDescription ,
+        {method: 'POST'})
         .then(function(response) {
             return response.json()
         }).then(function(data) {
-            //self.setState({ data }, () => console.log(self.state));
             if (data && data.status === 'success'){
-                self.setState({
-                    loggedIn: true,
-                    loggedInToken: data.api_token,
+                
+                self.setState((prevState, props) => {
+                    return {
+                        schedule: prevState.schedules.push(data.schedule),
+                    }
                 });
                 
-                localStorage.setItem('session', JSON.stringify({
-                    loggedIn: true,
-                    loggedInToken: data.api_token,
-                }))
-                
-                self.handleAddScheduleCancel();
+                self.handleScheduleCancel();
+            }
+        });
+    }
+
+    handleScheduleDelete(newState) {
+        const self = this;
+        fetch('http://localhost:8000/api/schedule/delete/?api_token=' + self.props.apiToken + 
+            '&schedule_id=' + newState.scheduleId ,
+        {method: 'POST'})
+        .then(function(response) {
+            return response.json()
+        }).then(function(data) {
+            if (data && data.status === 'success'){
+                self.setState((prevState, props) => {
+
+                    //let adults = prevState.schedules.filter(schedule => schedule.scheduleId > 18);
+
+                    return {
+                        schedules: prevState.schedules.filter(item => item.id !== newState.scheduleId)
+                    }
+                });
+                self.handleScheduleCancel();
+            }
+        });
+    }
+
+    handleScheduleDateChange(e, date) {
+        this.setState({
+            scheduleDate: date
+        });
+    }
+
+    handleScheduleDialogOnChange(event, date){
+        if (event.target.id === 'schedule_title') {
+            this.setState({
+                scheduleTitle: event.target.value
+            });
+        } else if  (event.target.id === 'schedule_description') {
+            this.setState({
+                scheduleDescription: event.target.value
+            });
+        }
+    }
+
+    scheduleDialogHandler(e, scheduleState) {
+        e.preventDefault();
+        this.setState((prevState, props) => {
+            if (scheduleState.scheduleAction === 'delete') {
+                this.handleScheduleDelete(scheduleState);
+            } else {
+                return scheduleState;
             }
         });
     }
     
+    
     componentDidMount(){
         this.getScheduleData(this.state.calendar);
     }
-    
-    scheduleDialogHandler(e, scheduleState) {
-        e.preventDefault();
-        
-        this.setState(scheduleState);
-    }
-    
+
     render(){
         
         const actions = [
@@ -341,19 +390,21 @@ class CalendarGrid extends React.Component {
             onRequestClose={this.handleScheduleCancel}
         >
             <DatePicker 
+                id="schedule_date_from"
                 hintText="Schedule Date" 
                 value={this.state.scheduleDate}
+                onChange={this.handleScheduleDateChange}
             />
             <TextField
                 hintText="Schedule Title"
                 id="schedule_title"
-                onChange={this.handleFieldChange}
+                onChange={this.handleScheduleDialogOnChange}
                 value={this.state.scheduleTitle}
             />
             <TextField
                 hintText="Schedule Description"
-                id="schedule_Description"
-                onChange={this.handleFieldChange}
+                id="schedule_description"
+                onChange={this.handleScheduleDialogOnChange}
             />
         </Dialog>
         </div>
