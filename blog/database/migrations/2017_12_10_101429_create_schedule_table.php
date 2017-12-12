@@ -24,6 +24,8 @@ class CreateScheduleTable extends Migration
             $table->integer('event_type')->nullable();
             $table->enum('links',[])->nullable();
             $table->enum('tags',[])->nullable();
+            $table->integer('group')->nullable();
+            $table->integer('assigned_to')->nullable();
             $table->timestamps();
         });
     }

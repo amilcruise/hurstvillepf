@@ -13,6 +13,8 @@ import DatePicker from 'material-ui/DatePicker';
 import TextField from 'material-ui/TextField';
 import Dialog from 'material-ui/Dialog';
 import FlatButton from 'material-ui/FlatButton';
+import DropDownMenu from 'material-ui/DropDownMenu';
+import MenuItem from 'material-ui/MenuItem';
 require('./CalendarGrid.scss');
 
 const styles = {
@@ -106,6 +108,7 @@ class CalendarGrid extends React.Component {
         this.handleScheduleDialogOnChange = this.handleScheduleDialogOnChange.bind(this);
         this.handleScheduleDateChange = this.handleScheduleDateChange.bind(this);
         this.handleScheduleDelete = this.handleScheduleDelete.bind(this);
+        this.handleGroupChange = this.handleGroupChange.bind(this);
         
         this.state = {
             startDay: startDay,
@@ -213,7 +216,8 @@ class CalendarGrid extends React.Component {
         const self = this;
         fetch('http://localhost:8000/api/schedule/?api_token=' + self.props.apiToken + 
         '&start_date=' + calendar[0].exactDate.format('YYYY-MM-DD') + 
-        '&end_date=' + calendar[calendar.length -1].exactDate.format('YYYY-MM-DD'))
+        '&end_date=' + calendar[calendar.length -1].exactDate.format('YYYY-MM-DD') +
+        '&group=' + self.props.group)
         .then(function(response) {
             return response.json()
         }).then(function(data) {
@@ -222,6 +226,8 @@ class CalendarGrid extends React.Component {
                 self.setState({
                     schedules: data.schedules,
                 });
+            } else if(data && data.status === 'fail') {
+                self.props.signOut();
             }
         });
     }
@@ -234,25 +240,63 @@ class CalendarGrid extends React.Component {
     
     handleScheduleSubmit() {
         const self = this;
-        fetch('http://localhost:8000/api/schedule/add/?api_token=' + self.props.apiToken + 
-            '&date_from=' + moment(self.state.scheduleDate).format('YYYY-MM-DD') + 
-            '&title=' + self.state.scheduleTitle +
-            '&description=' + self.state.scheduleDescription ,
-        {method: 'POST'})
+        let url = '';
+        let callback = null;
+        let params = null;
+        let method = null;
+
+        if (this.state.scheduleAction === 'add'){
+            url = 'http://localhost:8000/api/schedule/add/';
+            callback = (data) => {
+                if (data && data.status === 'success'){
+                    
+                    self.setState((prevState, props) => {
+                        return {
+                            schedule: prevState.schedules.push(data.schedule),
+                        }
+                    });
+                    
+                    self.handleScheduleCancel();
+                }
+            }
+            params = "?api_token=" + self.props.apiToken +
+                '&date_from=' + moment(self.state.scheduleDate).format('YYYY-MM-DD') + 
+                '&title=' + self.state.scheduleTitle +
+                '&description=' + self.state.scheduleDescription +
+                '&group=' + self.state.scheduleGroup;
+            method = 'POST';
+        } else {
+            url = 'http://localhost:8000/api/schedule/update/';
+            callback = (data) => {
+                if (data && data.status === 'success'){
+                    
+                    self.setState((prevState, props) => {
+
+                        let newSchedules = prevState.schedules.filter(item => item.id !== data.schedule.id);
+                        newSchedules.push(data.schedule);
+                        
+                        return {
+                            schedules: newSchedules,
+                        }
+                    });
+                    
+                    self.handleScheduleCancel();
+                }
+            }
+            params = "?api_token=" + self.props.apiToken +
+                '&date_from=' + moment(self.state.scheduleDate).format('YYYY-MM-DD') + 
+                '&title=' + self.state.scheduleTitle +
+                '&description=' + self.state.scheduleDescription +
+                '&schedule_id=' + self.state.scheduleId + 
+                '&group=' + self.state.scheduleGroup;
+            method = 'POST';
+        }
+
+        fetch(url + params, {method: method})
         .then(function(response) {
             return response.json()
-        }).then(function(data) {
-            if (data && data.status === 'success'){
-                
-                self.setState((prevState, props) => {
-                    return {
-                        schedule: prevState.schedules.push(data.schedule),
-                    }
-                });
-                
-                self.handleScheduleCancel();
-            }
-        });
+        }).then(callback);
+       
     }
 
     handleScheduleDelete(newState) {
@@ -305,10 +349,12 @@ class CalendarGrid extends React.Component {
             }
         });
     }
-    
+
+    handleGroupChange (event, index, value) { this.setState({scheduleGroup:value}); }
     
     componentDidMount(){
         this.getScheduleData(this.state.calendar);
+        this.setState({scheduleGroup: this.props.group});
     }
 
     render(){
@@ -373,6 +419,7 @@ class CalendarGrid extends React.Component {
                         hasSchedule={schedule.id}
                         handler={this.scheduleDialogHandler}
                         actualDate={day}
+                        description={schedule.description}
                         >
                         </CalendarTile>
                     )
@@ -389,22 +436,36 @@ class CalendarGrid extends React.Component {
             open={this.state.scheduleDialogOpen}
             onRequestClose={this.handleScheduleCancel}
         >
+            <DropDownMenu style={{display:'inline-block'}} value={this.state.scheduleGroup} onChange={this.handleGroupChange}>
+                <MenuItem value={1} primaryText="Team 1" />
+                <MenuItem value={2} primaryText="Team 2" />
+                <MenuItem value={3} primaryText="Team 3" />
+            </DropDownMenu>
             <DatePicker 
+                hintText="Schedule Date"
                 id="schedule_date_from"
                 hintText="Schedule Date" 
                 value={this.state.scheduleDate}
                 onChange={this.handleScheduleDateChange}
+                floatingLabelText="Schedule Date"
+                style={{display:'inline-block',float: 'right'}}
             />
             <TextField
                 hintText="Schedule Title"
                 id="schedule_title"
                 onChange={this.handleScheduleDialogOnChange}
                 value={this.state.scheduleTitle}
+                floatingLabelText="Schedule Title"
+                style={{width:'100%'}}
             />
             <TextField
                 hintText="Schedule Description"
                 id="schedule_description"
                 onChange={this.handleScheduleDialogOnChange}
+                value={this.state.scheduleDescription}
+                multiLine={true}
+                floatingLabelText="Schedule Description"
+                className="schedule-description"
             />
         </Dialog>
         </div>

@@ -38,12 +38,30 @@ class ScheduleController extends Controller
             
             $from = $request->input('start_date');
             $till = $request->input('end_date');
+            $group = $request->input('group');
+            $assignedTo = $request->input('assigned_to');
             
             // then simply
+            if ($group) {
+                $schedules = Schedule::where('date_from', '>=', $from)
+                ->where('date_from', '<=', $till)
+                ->where('date_from', '<=', $till)
+                ->where(function ($query) use ($group) {
+                    $query->where('group', '=', $group)
+                          ->orWhere('group', '=', null);
+                })
+                ->get();
+            } else if ($assignedTo) {
+                $schedules = Schedule::where('date_from', '>=', $from)
+                ->where('date_from', '<=', $till)
+                ->where('date_from', '<=', $till)
+                ->where(function ($query) use ($assignedTo) {
+                    $query->where('assigned_to', '=', $assignedTo)
+                          ->orWhere('assigned_to', '=', null);
+                })
+                ->get();
+            }
             
-            $schedules = Schedule::where('date_from', '>=', $from)
-            ->where('date_from', '<=', $till)
-            ->get();
             
             return response()->json(['status' => 'success','schedules' => $schedules]);
             
@@ -59,6 +77,7 @@ class ScheduleController extends Controller
         'api_token' => 'required',
         'date_from' => 'required',
         'title' => 'required',
+        'group' => 'required',
         ]);
         
         $user = User::where('api_token', $request->input('api_token'))->first();
@@ -68,6 +87,8 @@ class ScheduleController extends Controller
             $dateFrom = $request->input('date_from');
             $title = $request->input('title');
             $description = $request->input('description');
+            $group = $request->input('group');
+            $assignedTo = $request->input('assigned_to');
             $show = true;
             $eventType = true;
             $createdBy = $user->id;
@@ -82,7 +103,52 @@ class ScheduleController extends Controller
                 $schedule->show = true;
                 $schedule->event_type = $eventType;
                 $schedule->created_by = $createdBy;
+                $schedule->group = $group;
+                $schedule->assigned_to = $assignedTo;
                 $schedule->save();
+                
+                return response()->json(['status' => 'success','schedule' => $schedule]);  
+            }
+            catch(Exception $e){
+                return response(['message' => $e->getMessage(), 'success' => false],500);  
+            }
+            
+        } else {
+            return response()->json(['status' => 'fail'],401);
+        }
+        
+    }
+
+    public function updateschedule(Request $request) {
+        
+        $this->validate($request, [
+        'api_token' => 'required',
+        'date_from' => 'required',
+        'title' => 'required',
+        'schedule_id' => 'required',
+        ]);
+        
+        $user = User::where('api_token', $request->input('api_token'))->first();
+        
+        if ($user){
+            
+            $dateFrom = $request->input('date_from');
+            $title = $request->input('title');
+            $description = $request->input('description');
+            $createdBy = $user->id;
+            $scheduleId = $request->input('schedule_id');
+            $group = $request->input('group');
+            $assignedTo = $request->input('assigned_to');
+            
+            try{
+                $schedule = Schedule::find($scheduleId);
+                $schedule->update([
+                    'date_from' => $dateFrom,
+                    'title' => $title,
+                    'description' => $description,
+                    'group' => $group,
+                    'assigned_to' => $assignedTo,
+                    ]);
                 
                 return response()->json(['status' => 'success','schedule' => $schedule]);  
             }

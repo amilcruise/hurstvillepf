@@ -35,7 +35,7 @@ class CalendarTile extends React.Component {
         const scheduleDialogState = {
             scheduleDialogOpen: true,
             scheduleTitle: this.props.subtitle,
-            scheduleDescription: this.props.title,
+            scheduleDescription: this.props.description,
             scheduleDate: this.props.actualDate.exactDate.toDate(),
             scheduleAction: 'add',
         }
@@ -48,9 +48,10 @@ class CalendarTile extends React.Component {
         const scheduleDialogState = {
             scheduleDialogOpen: true,
             scheduleTitle: this.props.subtitle,
-            scheduleDescription: this.props.title,
+            scheduleDescription: this.props.description,
             scheduleDate: this.props.actualDate.exactDate.toDate(),
             scheduleAction: 'edit',
+            scheduleId: this.props.hasSchedule,
         }
         
         this.props.handler(e, scheduleDialogState);

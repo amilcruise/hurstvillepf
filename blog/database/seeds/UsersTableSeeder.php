@@ -18,6 +18,7 @@ class UsersTableSeeder extends Seeder
             'email' => 'amilcruise@yahoo.com',
             'password' => app('hash')->make('Aprilann1'),
             'api_token' => str_random(60),
+            'group' => 1,
         ]);
     }
 }

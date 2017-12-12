@@ -19,6 +19,6 @@ $router->group(['prefix' => 'api/'], function ($router) {
     $router->get('login/','UsersController@authenticate');
     $router->get('schedule/','ScheduleController@getschedule');
     $router->post('schedule/add', 'ScheduleController@addschedule');
-    $router->put('schedule/edit', 'ScheduleController@editschedule');
+    $router->post('schedule/update', 'ScheduleController@updateschedule');
     $router->post('schedule/delete', 'ScheduleController@deleteschedule');
 });

@@ -17,6 +17,8 @@ class Calendar extends React.Component {
 
     constructor(props) {
         super(props);
+
+        console.log(this.props.signOut);
     }
 
     render() {
@@ -24,6 +26,8 @@ class Calendar extends React.Component {
             <CalendarGrid 
                 dayNames={dayNames}
                 apiToken={this.props.apiToken}
+                signOut={this.props.signOut}
+                group={this.props.group}
             />
     )}
 }

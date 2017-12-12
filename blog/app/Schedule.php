@@ -14,7 +14,7 @@ class Schedule extends Model
      * @var array
      */
     protected $fillable = [
-        'title', 'date_from', 'description', 'created_by', 'show', 'links', 'event_type', 'tags'
+        'title', 'date_from', 'description', 'created_by', 'show', 'links', 'event_type', 'tags', 'group','assigned_to'
     ];
 
     /**

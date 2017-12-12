@@ -39,6 +39,7 @@ class DashboardContainer extends React.Component {
             password: '',
             loggedIn: session ? session.loggedIn : false,
             loggedInToken: session ? session.loggedInToken : null,
+            group: session ? session.group: null,
         }
     }
 
@@ -65,11 +66,13 @@ class DashboardContainer extends React.Component {
                 self.setState({
                     loggedIn: true,
                     loggedInToken: data.api_token,
+                    group: data.group,
                 });
 
                 localStorage.setItem('session', JSON.stringify({
                     loggedIn: true,
                     loggedInToken: data.api_token,
+                    group: data.group,
                 }))
 
                 self.handleSignInClose();
@@ -90,13 +93,14 @@ class DashboardContainer extends React.Component {
     }
 
     handler(e) {
-        e.preventDefault();
+        if (e) e.preventDefault();
 
         localStorage.setItem('session','');
 
         this.setState({
             loggedIn: false,
             loggedInToken: null,
+            group: 0,
         });
       }
 
@@ -130,7 +134,12 @@ class DashboardContainer extends React.Component {
                     { this.state.loggedIn && (<TopAppMenu signOut={this.handler} />) }
                 </AppBar>
 
-                { this.state.loggedIn && (<Calendar apiToken={this.state.loggedInToken} />) }
+                { this.state.loggedIn && (
+                    <Calendar 
+                        apiToken={this.state.loggedInToken} 
+                        signOut={this.handler} 
+                        group={this.state.group} />
+                )}
 
                 <Dialog
                     title="Sign In"
