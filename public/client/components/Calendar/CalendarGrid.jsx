@@ -109,6 +109,8 @@ class CalendarGrid extends React.Component {
         this.handleScheduleDateChange = this.handleScheduleDateChange.bind(this);
         this.handleScheduleDelete = this.handleScheduleDelete.bind(this);
         this.handleGroupChange = this.handleGroupChange.bind(this);
+        this.handleViewSchedule = this.handleViewSchedule.bind(this);
+        this.handleViewClose = this.handleViewClose.bind(this);
         
         this.state = {
             startDay: startDay,
@@ -121,6 +123,7 @@ class CalendarGrid extends React.Component {
             }).calendar,
             schedules: [],
             scheduleDialogOpen: false,
+            scheduleViewDialogOpen: false,
         }
     }
     
@@ -286,7 +289,7 @@ class CalendarGrid extends React.Component {
             params = "?api_token=" + self.props.apiToken +
                 '&date_from=' + moment(self.state.scheduleDate).format('YYYY-MM-DD') + 
                 '&title=' + self.state.scheduleTitle +
-                '&description=' + self.state.scheduleDescription +
+                '&description=' + self.state.scheduleDescription.replace(/\n/g, '%0A') +
                 '&schedule_id=' + self.state.scheduleId + 
                 '&group=' + self.state.scheduleGroup;
             method = 'POST';
@@ -351,6 +354,24 @@ class CalendarGrid extends React.Component {
     }
 
     handleGroupChange (event, index, value) { this.setState({scheduleGroup:value}); }
+
+    handleViewSchedule(e, schedule) {
+        this.setState((prevState, props) => {
+            return {
+                scheduleViewDialogOpen: true,
+                scheduleId: schedule.scheduleId,
+                scheduleTitle: schedule.scheduleTitle,
+                scheduleDescription: schedule.scheduleDescription,
+                scheduleDate: schedule.scheduleDate,
+            }
+        });
+    }
+
+    handleViewClose() {
+        this.setState({
+            scheduleViewDialogOpen: false,
+        })
+    }
     
     componentDidMount(){
         this.getScheduleData(this.state.calendar);
@@ -372,7 +393,15 @@ class CalendarGrid extends React.Component {
             onClick={this.handleScheduleSubmit}
             />,
         ];
-        
+
+        const viewActions = [
+            <FlatButton
+            label="Close"
+            primary={true}
+            onClick={this.handleViewClose}
+            />,
+        ];
+
         return (<div style={styles.root}>
             <GridList style={styles.gridListDayName} cellHeight={180} cols={7}>
             <Subheader className="grid-list__heading__container">
@@ -420,6 +449,7 @@ class CalendarGrid extends React.Component {
                         handler={this.scheduleDialogHandler}
                         actualDate={day}
                         description={schedule.description}
+                        viewHandler={this.handleViewSchedule}
                         >
                         </CalendarTile>
                     )
@@ -467,6 +497,25 @@ class CalendarGrid extends React.Component {
                 floatingLabelText="Schedule Description"
                 className="schedule-description"
             />
+        </Dialog>
+        <Dialog
+          title={this.state.scheduleTitle}
+          modal={true}
+          contentStyle={{width: '100%', maxWidth: 'none'}}
+          open={this.state.scheduleViewDialogOpen}
+          actions={viewActions}
+          autoDetectWindowHeight={false}
+        >
+          <div className="schedule_date__wrapper">
+            {moment(this.state.scheduleDate).format('dddd, MMMM DD YYYY')}
+          </div>
+          {this.state.scheduleDescription && (<div className="schedule_desc__wrapper">
+            {
+                this.state.scheduleDescription.split('\n').map((item, key) => {
+                    return <span key={key}>{item}<br/></span>
+                })
+            }
+          </div>)}
         </Dialog>
         </div>
     )

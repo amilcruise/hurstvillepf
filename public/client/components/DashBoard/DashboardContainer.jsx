@@ -6,6 +6,8 @@ import Calendar from '../Calendar/Calendar';
 import TopAppMenu from './TopAppMenu';
 import Dialog from 'material-ui/Dialog';
 import TextField from 'material-ui/TextField';
+import FacebookLogin from 'react-facebook-login';
+require('./DashboardContainer.scss');
 
 const styles = {
     raisedButton: {
@@ -14,7 +16,7 @@ const styles = {
     }
 };
 
-
+const displayFBLogin = false;
 
 class DashboardContainer extends React.Component {
 
@@ -26,6 +28,8 @@ class DashboardContainer extends React.Component {
         this.handleSignInSubmit = this.handleSignInSubmit.bind(this);
         this.handleFieldChange = this.handleFieldChange.bind(this);
         this.handler = this.handler.bind(this);
+        this.responseFacebook = this.responseFacebook.bind(this);
+        this.handleKeyPress = this.handleKeyPress.bind(this);
 
         let session = localStorage.getItem("session");
 
@@ -104,6 +108,18 @@ class DashboardContainer extends React.Component {
         });
       }
 
+    responseFacebook(response) {
+        console.log(response);
+        //anything else you want to do(save to localStorage)...
+    }
+
+    handleKeyPress(event) {
+        if(event.key == 'Enter'){
+            this.handleSignInSubmit();
+        }
+    }
+    
+
     render (){
 
         const actions = [
@@ -147,18 +163,44 @@ class DashboardContainer extends React.Component {
                     modal={false}
                     open={this.state.signInDialogOpen}
                     onRequestClose={this.handleSignInClose}
+                    className="login-dialog"
                     >
-                    <TextField
-                        hintText="email"
-                        id="login_email"
-                        onChange={this.handleFieldChange}
-                    />
-                    <TextField
-                        hintText="password"
-                        id="login_password"
-                        onChange={this.handleFieldChange}
-                        type="password"
-                    />
+                    {displayFBLogin && (
+                        <div>
+                            <div className="facebook-login__container">
+                                <FacebookLogin
+                                    appId="154795061951319"
+                                    autoLoad={true}
+                                    fields="name,email,picture"
+                                    callback={this.responseFacebook}
+                                    cssClass="facebook-login"
+                                    icon="fa-facebook"
+                                />
+                            </div>
+                            <span className="divider">
+                                <span className="signin-text">Sign in with facebook or use email and password below</span>
+                            </span>
+                        </div>
+                    )}
+                    <div className="email-login__container">
+                        <TextField
+                            hintText="email"
+                            id="login_email"
+                            onChange={this.handleFieldChange}
+                            className="signin-inputs"
+                            floatingLabelText="email"
+                            type="email"
+                        />
+                        <TextField
+                            hintText="password"
+                            id="login_password"
+                            onChange={this.handleFieldChange}
+                            type="password"
+                            className="signin-inputs"
+                            floatingLabelText="password"
+                            onKeyPress={this.handleKeyPress} 
+                        />
+                    </div>
                 </Dialog>
             </div>
         )

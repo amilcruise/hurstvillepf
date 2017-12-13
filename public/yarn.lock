@@ -4065,6 +4065,10 @@ react-event-listener@^0.5.1:
     prop-types "^15.6.0"
     warning "^3.0.0"
 
+react-facebook-login@^3.7.2:
+  version "3.7.2"
+  resolved "https://registry.yarnpkg.com/react-facebook-login/-/react-facebook-login-3.7.2.tgz#a67b55c3ba3e72328813e7e75886af352b62b0b5"
+
 react-material-calender@^1.0.5:
   version "1.0.5"
   resolved "https://registry.yarnpkg.com/react-material-calender/-/react-material-calender-1.0.5.tgz#f154733c8c3dc3ca873091abd0e4aa71cb707951"

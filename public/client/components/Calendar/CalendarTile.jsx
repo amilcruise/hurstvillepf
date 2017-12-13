@@ -4,6 +4,8 @@ import IconButton from 'material-ui/IconButton';
 import AddIcon from 'material-ui/svg-icons/content/add-box';
 import EditIcon from 'material-ui/svg-icons/editor/mode-edit';
 import DeleteIcon from 'material-ui/svg-icons/action/delete';
+import ViewIcon from 'material-ui/svg-icons/image/remove-red-eye';
+import { grey700, grey900 } from 'material-ui/styles/colors';
 
 class CalendarTile extends React.Component {
     
@@ -16,6 +18,7 @@ class CalendarTile extends React.Component {
         this.handleAddSchedule = this.handleAddSchedule.bind(this);
         this.handleEditSchedule = this.handleEditSchedule.bind(this);
         this.handleDeleteSchedule = this.handleDeleteSchedule.bind(this);
+        this.handleViewSchedule = this.handleViewSchedule.bind(this);
         
         this.state = {
             isMouseInside: false,
@@ -67,6 +70,15 @@ class CalendarTile extends React.Component {
         
         this.props.handler(e, scheduleDialogState);
     }
+
+    handleViewSchedule(e) {
+        this.props.viewHandler(e, {
+            scheduleTitle: this.props.subtitle,
+            scheduleDescription: this.props.description,
+            scheduleDate: this.props.actualDate.exactDate.toDate(),
+            scheduleId: this.props.hasSchedule,
+        })
+    }
     
     render() {
         return (<GridTile
@@ -83,8 +95,10 @@ class CalendarTile extends React.Component {
                 this.props.isThisMonth &&
                 this.props.subtitle === '' && (
                     <IconButton 
-                    tooltip="Add Item"
-                    onClick={this.handleAddSchedule}
+                        tooltip="Add Item"
+                        onClick={this.handleAddSchedule}
+                        style={{marginLeft: 'calc(50% - 24px)'}}
+                        iconStyle={{color: grey700}}
                     >
                     <AddIcon />
                     </IconButton>
@@ -95,16 +109,30 @@ class CalendarTile extends React.Component {
                     this.props.subtitle && (
                         <div className=''>
                         <IconButton 
-                        tooltip="Edit Item"
-                        onClick={this.handleEditSchedule}
+                            tooltip="Edit Item"
+                            tooltipPosition="bottom-right"
+                            onClick={this.handleEditSchedule}
+                            style={{padding:5, width: 20, height: 20}}
+                            iconStyle={{width: 18, height: 18, color: grey700}}
                         >
-                        <EditIcon />
+                            <EditIcon />
+                        </IconButton>
+                        <IconButton
+                            tooltip="View"
+                            onClick={this.handleViewSchedule}
+                            style={{position:'absolute', left: '50%', marginLeft: -30, top: 5}}
+                            iconStyle={{width: 40, height: 40}}
+                         >
+                            <ViewIcon />
                         </IconButton>
                         <IconButton 
-                        tooltip="Delete Item"
-                        onClick={this.handleDeleteSchedule}
+                            tooltip="Delete Item"
+                            tooltipPosition="bottom-left"
+                            onClick={this.handleDeleteSchedule}
+                            style={{padding:5, width: 20, height: 20, float: 'right', marginRight: 5}}
+                            iconStyle={{width: 18, height: 18, color: grey700 }}
                         >
-                        <DeleteIcon />
+                            <DeleteIcon />
                         </IconButton>
                         </div>
                     )}

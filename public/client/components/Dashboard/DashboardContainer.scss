@@ -1,0 +1,51 @@
+.facebook-login__container {
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.facebook-login {
+    padding: 10px;
+    border-radius: 3px;
+    font-size: 1em;
+    color: white;
+    background: #4267b2;
+    border: none;
+    border-bottom: 1px solid #173575;
+}
+
+
+.facebook-login > i {
+    margin-right: 10px;
+}
+
+.divider {
+    display: block;
+    border-color: rgb(189, 189, 189);
+    margin-left: -6px;
+    border-top-style: solid;
+    border-top-width: 1px;
+    margin: 40px auto;
+    position: relative
+}
+
+.login-dialog .signin-inputs {
+    margin-right: 20px;
+}
+
+.signin-text {
+    position: absolute;
+    width: 50%;
+    text-align: center;
+    top: -10px;
+    font-size: 0.8em;
+    background-color: #fff;
+    left: 50%;
+    margin-left: -25%;
+}
+
+.email-login__container {
+    display: block;
+    width: 100%;
+    text-align: center;
+}
+
